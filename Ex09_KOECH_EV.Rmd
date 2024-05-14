@@ -1,0 +1,141 @@
+---
+title: "Introduction to R"
+subtitle: "Homework 9"
+author: "Koech Andrew"
+R version: "`r R.version.string`"
+# date: "`r format(Sys.Date(), '%d %B, %Y')`"
+date: "`r Sys.time()`"
+mainfont: Calibri Light
+output: pdf_document
+geometry: margin=1in
+
+header-includes:
+  - \usepackage{amsfonts}
+  - \usepackage{amssymb}
+  - \usepackage{mathtools}
+  - \usepackage{braket}
+
+---
+\newpage
+
+## Homework task 1
+
+When treating a condition, it is said, post-operative complications are known to occur in 25% of cases. A surgeon tests a new procedure on 10 patients and no complications occur. Is the new method better? Use the significance level $\alpha= 0.05$.
+
+```{r,message=FALSE,warning=FALSE,include=TRUE}
+#Ho:p=>0.25 vs H1:p < 0.25
+binom.test(0, 10, p = 0.25, alternative = "l",0.95)
+#We fail to reject the null hypothesis at alpha=0.05 and conclude the new method is not statistically better
+```
+<!-- EV: 4/4 -->
+
+
+## Homework task 2
+
+In 11 subjects, platelet aggregation was measured before and after smoking a cigarette. 
+
+a) Assume that the values within the before and after smoking groups, respectively, are realizations of independent, identically normally distributed random variables. Use a suitable t-test (at significance level $\alpha= 0.05$) to test the alternative hypothesis that nicotine is expected to increase aggregation.
+
+b) Use the Wilcoxon-test and repeat the test in a).
+
+
+```{r,message=FALSE,warning=FALSE,include=TRUE}
+#Ho:u2-u1=<0 vs H1:u2-u1>0
+Before<-c(25,25,27,44,30,67,53,53,52,60,28)
+After<-c(27,29,37,56,46,82,57,80,61,59,43)
+var(Before);var(After);sd(Before);sd(After);
+#Therefore we assume the variances are different; hence use a paired t-test since the subjects are the same overall
+t.test(Before,After,alternative="greater",paired=TRUE,var.equal = FALSE)
+
+## EV: If you state it like here you test whether before is "greater" than after,
+# but you want to show an increase which would be the other way around:
+t.test(Before,After, mu=0, alternative = "less",paired = T,conf.level = 0.95) # test: before 'less' than after
+# or
+t.test(After,Before, mu=0, alternative = "greater",paired = T,conf.level = 0.95) # test: after 'greater' than before (same as the other)
+
+
+
+#We fail to reject the null hypothesis at alpha=0.05 and conclude that their exist no statistically significant difference to infer that nicotine is expected to increase  platelet aggregation
+wilcox.test(Before,After,alternative="greater",paired=TRUE)
+wilcox.test(After,Before,alternative="greater",paired=TRUE) ## EV: as above
+#We also fail  to reject the null hypothesis at alpha=0.05 
+```
+<!-- EV: 2.5/4 -->
+
+## Homework task 3
+
+Load the data set _birthwt_ from the package MASS and read the help function for this data.
+
+a) Using these data, use a t-test (at significance level $\alpha= 0.05$) to test the alternative hypothesis that a newborn's weight is dependent on her mother's smoking behavior.
+
+b) Test the alternative hypothesis that the weight of a newborn is dependent on the blood pressure (ht) of its mother using a t-test (at significance level $\alpha= 0.05$) on the basis of these data.
+
+c) Answer questions a) and b) with the Wilcoxon test.
+
+```{r,message=FALSE,warning=FALSE,include=TRUE}
+library(MASS)
+data("birthwt")
+attach(birthwt)
+#Test used is two sided (Welch Test) since we are not interested in a specific direction so we might as well test on either directions and the groups are not of equal size
+t.test(bwt~smoke,data = birthwt,alternative="t",var.equal=FALSE)
+#We reject the null hypothesis at alpha=0.05 (p-value<0.05) and conclude that their exist a statistically significant dependence of a newborn's weight on her mother's smoking behavior
+t.test(bwt~ht,data = birthwt,alternative="t",var.equal=FALSE)
+#We fail to reject the null hypothesis at alpha=0.05 (p-value>0.05) and conclude that their exist no statistically significant dependence of a newborn's weight on her mother's blood pressure
+wilcox.test(bwt~smoke,data = birthwt,alternative="t")
+#As with the t-test we reject the null hypothesis at alpha=0.05 (p-value=0.006768) and conclude that their exist a statistically significant dependence of a newborn's weight on her mother's smoking behavior
+wilcox.test(bwt~ht,data = birthwt,alternative="t")
+#We also fail to reject the null hypothesis at alpha=0.05 (p-value = 0.1176) and conclude that their exist no statistically significant dependence of a newborn's weight on her mother's blood pressure
+```
+<!-- EV: 6/6 -->
+
+## Homework task 4
+
+The weight gain of rats is investigated under different feeding regimes:
+
+a) Use a t-test (or Welch-Test) to test the alternative hypothesis ($\alpha= 0.05$), that feeding with high protein content leads to a higher weight gain. Assume that the observations come from normal distributions.
+
+b) Answer this question with the Wilcoxon test.
+
+```{r,message=FALSE,warning=FALSE,include=TRUE}
+lowprotein<-c(66,112,96,78,111,121,95)
+highprotein<-c(130,141,99,120,116,144,105,94,110)
+sd(lowprotein);sd(highprotein)
+t.test(lowprotein,highprotein,alternative="g",var.equal=FALSE,conf.level = 0.95)
+#We fail to reject the null hypothesis at alpha=0.05 (p-value = 0.975) and conclude that their exist no statistically significant difference to infer that feeding with high protein content leads to a higher weight gain
+
+## EV: Here, you have to be careful again with the direction of the test. 
+# Like this you test whether the low protein values are greater than the highprotein values. Changing this leads to
+t.test(highprotein,lowprotein,alternative="g",var.equal=FALSE,conf.level = 0.95)
+# (Are the highprotein values actually greater than the lowprotein values?)
+## So you actually get a p-value <0.05 and thus can reject the null. 
+
+wilcox.test(lowprotein,highprotein,alternative="g",var.equal=FALSE,conf.level = 0.95) ## EV: As above.
+wilcox.test(lowprotein,highprotein,alternative="l",var.equal=FALSE,conf.level = 0.95) ## EV: As above. This time p-value > 0.05.
+
+#We fail to reject the null hypothesis at alpha=0.05 (p-value = 0.9546) and conclude that their exist no statistically significant difference to infer that feeding with high protein content leads to a higher weight gain
+```
+
+<!-- EV: 4/6 -->
+
+## Extra Task:
+
+For n = 50 and k = 30 (number of successes) determine the smallest probability $p_0$, for which the null hypothesis H0 : $p \ge p_0$ can still just be rejected at a significance level of 5% by the one-sided lower binomial test (that is H1 : $p < p_0$).
+
+```{r,message=FALSE,warning=FALSE,include=TRUE}
+kp0<-0#Initializing the smallest prob of rejecting
+x<-seq(0,1,0.0001)#Vector of all possible prob values between 0 and 1
+for (p in x) {
+  decision<-binom.test(30, 50, p, alternative="l", conf.level=0.95)
+  if (decision$p.value<=0.05) {
+    kp0<-p
+    break
+  }
+}
+print(kp0)
+
+binom.test(30, 50, p=0.7169, alternative="l", conf.level=0.95)#Checking validity of the result
+```
+
+<!-- EV: 4/4 -->
+
+<!-- Total 20.5/20 -->

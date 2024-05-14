@@ -1,0 +1,109 @@
+---
+title: "Introduction to R"
+subtitle: "Homework 10"
+author: "Koech Andrew"
+R version: "`r R.version.string`"
+# date: "`r format(Sys.Date(), '%d %B, %Y')`"
+date: "`r Sys.time()`"
+mainfont: Calibri Light
+output: pdf_document
+geometry: margin=1in
+
+header-includes:
+  - \usepackage{amsfonts}
+  - \usepackage{amssymb}
+  - \usepackage{mathtools}
+  - \usepackage{braket}
+
+---
+\newpage
+
+## Homework task 1
+
+In a study it will be shown that the blood glucose value can be reduced by $10mg/dl$ under a certain therapy. From preliminary studies $\sigma = 20mg/dl$ is known. The test is to be performed with a significance level 0.05 and a power of 0.90. Calculate the sample size needed to confirm this effect.
+
+A study of 40 patients is being conducted. How large should the actual effect (blood glucose reduction) be to be detected with a significance level of 0.05 and a power of 0.90. Assume that $\sigma = 10mg/dl$.
+
+
+```{r,warning=FALSE,include=TRUE,message=FALSE}
+# ?power.t.test()
+sn<-power.t.test(n = NULL,delta =10,sd=20,sig.level = 0.05,power = .90)
+ceiling(sn$n)*2#n=172 for both groups altogether
+
+min.delta<-power.t.test(n = 40,delta =NULL,sd=10,sig.level = 0.05,power = .90)
+min.delta$delta#7.339195
+```
+
+<!-- EV: 6/6 -->
+
+## Homework task 2
+
+Load the dataset _iris_. Using this dataset, we want to test the null hypothesis that the means of Sepal.Length are the same for different Species, i.e. ($\mu_{versicolor} = \mu_{setosa} = \mu_{virginica}$). Assume that Sepal.Length is normally distributed. Use the pairwise t test with Bonferroni and Holm corrections with $\alpha = 0.05$ for your test. Execute the same procedure for the other metric-scaled features in the dataset.
+
+```{r,warning=FALSE,include=TRUE,message=FALSE}
+#H0:Sepal.Length are the same for versicolor,setosa,virginica Vs H1: Sepal.Length are different for atleast one species
+data("iris")
+attach(iris)
+
+pairwise.t.test(Sepal.Length,Species,pool.sd = FALSE, p.adjust.method = "holm")
+pairwise.t.test(Sepal.Length,Species,pool.sd = FALSE, p.adjust.method = "bonferroni")
+#According to both corrections the p-values<0.05 hence we can conclude that the means of Sepal Length are significantly different for the three Species
+pairwise.t.test(Sepal.Width,Species,pool.sd = FALSE, p.adjust.method = "holm")
+pairwise.t.test(Sepal.Width,Species,pool.sd = FALSE, p.adjust.method = "bonferroni")
+#According to both corrections the p-values<0.05 hence we can as well conclude that the means of Sepal Width are significantly different for the three Species
+pairwise.t.test(Petal.Length,Species,pool.sd = FALSE, p.adjust.method = "holm")
+pairwise.t.test(Petal.Length,Species,pool.sd = FALSE, p.adjust.method = "bonferroni")
+#According to both corrections the p-values<0.05 hence we can as well conclude that the means Petal Length are significantly different for the three Species
+pairwise.t.test(Petal.Width,Species,pool.sd = FALSE, p.adjust.method = "holm")
+pairwise.t.test(Petal.Width,Species,pool.sd = FALSE, p.adjust.method = "bonferroni")
+#According to both corrections the p-values<0.05 hence we can as well conclude that the means Petal Width are significantly different for the three Species
+```
+
+<!-- EV: 6/6 -->
+
+## Homework task 3
+
+```{r,warning=FALSE,include=TRUE,message=FALSE}
+#part 1
+ST<-c("NAME: Maria /COUNTRY:uruguay /EMAIL: mariaUY@gmail.com")
+
+split.part1<-strsplit(ST,split = " /")[[1]]
+split.part2<-strsplit(split.part1,":")
+result<-matrix(unlist(split.part2),ncol=2,byrow=T);result
+
+##### EV: 2/2 #####
+
+#part 2
+Position <- function(text){
+  x <- letters
+  pos <- match(strsplit(text,"")[[1]], x)
+  return(pos)
+}
+Position("abcdza")
+
+##### EV: 2/2 #####
+
+#part 3
+library(ggplot2)
+data("diamonds")
+attach(diamonds)
+
+# ggplot(diamonds, aes(x=carat, y=price,col=color)) + 
+#   geom_point() +  labs(x = "Carat", y = "Price")
+
+plot(price~carat,pch=19,col=color,ylim=c(0,20000),xlim=c(0,6),
+     main="Plot of Price versus Carat in Diamonds",
+     xlab = "Carat", ylab = "Price")
+grid(lty = "dotted",col = "lightgray")
+points(price ~ carat, pch = 19, col = color)
+legend("topright", legend = levels(color), pch = 19,
+       col = 1:length(levels(color)),title = "Color")
+
+
+mod<-lm(price~carat,data = diamonds)
+abline(mod,col="red",lwd=2)
+
+##### EV: 2/2 #####
+```
+
+<!-- Total 18/20 -->

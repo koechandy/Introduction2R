@@ -1,0 +1,111 @@
+---
+title: "Introduction to R"
+subtitle: "Homework 11"
+author: "Koech Andrew"
+R version: "`r R.version.string`"
+# date: "`r format(Sys.Date(), '%d %B, %Y')`"
+date: "`r Sys.time()`"
+mainfont: Calibri Light
+output: pdf_document
+geometry: margin=1in
+
+header-includes:
+  - \usepackage{amsfonts}
+  - \usepackage{amssymb}
+  - \usepackage{mathtools}
+  - \usepackage{braket}
+
+---
+\newpage
+
+## Homework task 1
+
+Test whether there is a relationship between smoking and gender using the Fisher's exact test and the $\chi^2$-test.
+
+```{r}
+observed.freq<- matrix(c(14,26,1,12),2,byrow = F)
+colnames(observed.freq) <- c("non-smokers","smokers")
+rownames(observed.freq) <- c("men","women");observed.freq
+
+chisq.test(observed.freq)#Since the p-value > 0.05 we conclude that their exists no statistically significant relationship between smoking and gender
+fisher.test(observed.freq)#Since the p-value > 0.05 we conclude that their exists no statistically significant relationship between smoking and gender
+DescTools::GTest(observed.freq)#Since the p-value < 0.05 we conclude that their exists a statistically significant relationship between smoking and gender
+```
+
+<!-- EV: 5/5 -->
+
+
+## Homework task 2
+
+In the _survey_ dataset from the MASS package, consider the variables Pulse (pulse rate, beats per minute) and Smoke (smoking behavior, different categories). Is there a statistically significant relationship between pulse rate and smoking behavior? Use the cor.test function for a test based on Kendall's tau. Consider the variable Smoke as numerical, i.e. assign numerical values 1 to 4 to the expressions Never, Occas, Regul and Heavy in a meaningful order. $(Never< Occas < Regul < Heavy)$ Use $\alpha= 0.05$  for your tests.
+
+```{r}
+library(MASS)
+data("survey")
+attach(survey)
+Smoke<-as.numeric(factor(Smoke,levels = c("Never","Occas","Regul","Heavy")))
+cor.test(Pulse,Smoke,method = "kendall")
+#There exists no statistically significant relationship between pulse rate and smoking behaviour at alpha=0.05 since the p-value = 0.8301 > 0.05
+```
+
+<!-- EV: 5/5 -->
+
+## Homework task 3
+
+```{r}
+'%dsum%'<-function(x,y){
+2*(x+y)  
+}
+
+3%dsum%5
+2%dsum%7
+
+## EV: colon operator missing.
+```
+<!-- EV: 2/3 -->
+
+## Homework task 4
+
+```{r}
+set.seed(528164)
+library(tidyverse)
+library(fmsb)
+library(gridExtra)
+field1<-runif(3,0,20) 
+field2<-runif(3,0,20) 
+field3<-runif(3,0,20) 
+field4<-runif(3,0,20) 
+field5<-runif(3,0,20)
+max.value<-rep(20,5)
+min.value<-rep(0,5)
+skills<-data.frame(field1,field2,field3,field4,field5)
+df<-rbind(max.value,min.value,skills)
+rownames(df)<-c("max.value","min.value","namea","nameb","namec")
+
+radarchart(df)
+
+op <- par(mar = c(1,2, 4, 12))
+layout(matrix(c(1, 2), nrow = 1), widths = c(3, 1))
+radarchart(df, plwd=2, plt=2, cglcol="grey", cglty=2, axistype =0,
+           pfcol ="#99999980",pcol =c("#00AFBB", "#E7B800", "#FC4E07"))
+
+legend(x = "bottom", legend = rownames(df[-c(1,2),]), horiz = TRUE,bty = "n",
+       pch = 20 , col = c("#00AFBB", "#E7B800","#FC4E07"))
+
+df=df[-c(1,2),]
+df <- df %>%
+  rownames_to_column(var = "student_names") %>%
+  pivot_longer(-student_names, names_to = "field", values_to = "Value")
+
+ggplot(df, aes(factor(field), Value, fill = student_names)) +
+  geom_bar(stat="identity", position = "stack") +
+  scale_fill_brewer(palette = "Set1")+
+  labs(x="field",y="Skill level")
+
+par(op)
+
+```
+
+<!-- EV: 7/7 -->
+
+<!-- Total 19/20 -->
